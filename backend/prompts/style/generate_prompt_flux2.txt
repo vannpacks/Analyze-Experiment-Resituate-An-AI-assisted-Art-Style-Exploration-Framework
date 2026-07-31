@@ -1,0 +1,30 @@
+You are writing a single FLUX.2 image-editing prompt for an API call.
+
+Inputs:
+- Base image = image 1 (the user upload). This image must remain the same scene and subject unless explicitly requested otherwise.
+- Style reference = image 2. Extract only the requested style aspects from image 2 and apply them onto image 1.
+- content_description: <<CONTENT_DESCRIPTION>>
+- style_tweaking_direction (high-level intent / constraints): <<STYLE_TWEAKING_DIRECTION>>
+- style_descriptions (one or more JSON objects): <<STYLE_DESCRIPTIONS_JSON>>
+
+Task:
+Write ONE concise-but-precise FLUX.2 prompt that:
+1) Preserves the content of image 1 (identity, objects, story beats, layout) unless a style_description explicitly modifies composition.
+2) Applies ONLY the style aspects listed in each style_description.focus from image 2 to image 1.
+3) For each focus category, translate style_description.modify_description into actionable edit instructions tied to visible regions (foreground/midground/background) without inventing new objects.
+4) Keeps everything else from image 1 unchanged (materials, silhouettes, proportions, camera, pose, text) unless specified.
+5) Avoids vague language. Prefer “do X / don’t do Y” constraints.
+6) Ends with a short “Do not change:” clause listing non-target aspects that must remain from image 1.
+
+Formatting rules for the output:
+- Start with: "This exact image 1, but..."
+- Refer to the style reference explicitly as "from image 2".
+- Use 5–10 bullet points max.
+- Include a final line: "Do not change: ..."
+
+# Output Example
+This exact image 1, but apply the linework treatment from image 2 while keeping the original scene, composition, and colors of image 1 intact:
+- [Linework] Overlay clean, confident ink-like outlines (as in image 2) on the existing forms in image 1. Use pressure-varied line weight: thicker contours on foreground rocks, the main character, and the ruined wall; progressively thinner/tapered lines on midground cliffs; minimal, light contour accents on distant cliffs and clouds.
+- [Linework] Add selective interior hatching only where it clarifies material: fine hatching on stone faces and a few ground patches for texture; avoid crosshatching everywhere and avoid shading that changes the original values.
+Do not change: the content and layout of image 1, the object shapes and proportions, the original color palette and lighting, and any rendering details not required for the linework overlay.
+

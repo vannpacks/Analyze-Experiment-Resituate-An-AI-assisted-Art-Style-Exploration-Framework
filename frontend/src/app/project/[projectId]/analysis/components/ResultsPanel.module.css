@@ -1,0 +1,1223 @@
+/* Magnifying Glass Button */
+.magnifyButton {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.magnifyButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+/* Loading spinner for individual image containers */
+.imageLoadingSpinner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: 8px;
+  /* Ensure minimum height even when empty */
+  min-height: 120px;
+}
+
+.imageLoadingSpinner .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e5e5;
+  border-top: 3px solid #6b6b6b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Disable hover effects during loading */
+.gridImageContainer:has(.imageLoadingSpinner) {
+  cursor: default;
+}
+
+.gridImageContainer:has(.imageLoadingSpinner):hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Description Panel */
+.descriptionPanel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  min-height: 150px;
+}
+
+.variationInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.variationTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin: 0 0 20px 0;
+  text-align: center;
+}
+
+.variationDescription {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: #5a5a5a;
+  margin: 0;
+  text-align: left; /* Changed from center to left for structured content */
+}
+
+/* NEW: Structured Description Styles */
+.structuredDescription {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.focusSection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.focusAspect {
+  font-size: 0.75rem;
+  color: #B0C1D1;
+  background: rgba(176, 193, 209, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(176, 193, 209, 0.3);
+  font-weight: 500;
+}
+
+.targetEffectSection,
+.descriptionSection {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #5a5a5a;
+  margin: 0;
+}
+
+.targetEffectSection strong,
+.descriptionSection strong {
+  font-weight: 600;
+  color: #4a4a4a;
+}
+
+.confirmSelectButton {
+  background: #A38F53;
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 24px;
+  text-align: center;
+}
+
+.confirmSelectButton:hover:not(:disabled) {
+  background: #8f7a45;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(163, 143, 83, 0.3);
+}
+
+.confirmSelectButton:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.confirmSelectButton:disabled:hover {
+  background: #cccccc;
+  transform: none;
+}
+
+.placeholderText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #8a8a8a;
+}
+
+.placeholderText h3 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.placeholderText p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+/* Style for placeholder text during loading in description panel */
+.placeholderText .spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e5e5e5;
+  border-top: 2px solid #6b6b6b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px auto;
+}
+
+/* Image Comparison Preview Popup */
+.previewOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.previewContainer {
+  position: relative;
+  max-width: 95vw;
+  max-height: 95vh;
+  background: white;
+  border-radius: 16px;
+  overflow: visible;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.closePreviewButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  color: #8a8a8a;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  z-index: 10;
+}
+
+.closePreviewButton:hover {
+  color: #6f6f6f;
+}
+
+/* Comparison Container - FIXED for 3 images with proper aspect ratio */
+.comparisonContainer {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 60px 24px 20px;
+  gap: 16px;
+  max-height: calc(100vh - 200px);
+}
+
+.leftStackColumn {
+  flex: 0.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  gap: 16px;
+}
+
+.leftStackColumn .comparisonSection {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.generatedSection {
+  flex: 2.4;
+  min-height: 0;
+  overflow: visible;
+}
+
+.comparisonSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.comparisonHeader {
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.comparisonTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin: 0;
+}
+
+.comparisonImageContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.comparisonImage {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
+}
+
+.leftStackColumn .comparisonImage {
+  max-height: 100%;
+}
+
+.leftStackColumn .comparisonImageContainer {
+  overflow: hidden;
+  padding: 8px;
+}
+
+.leftStackColumn .comparisonImagePlaceholder {
+  padding: 20px 12px;
+}
+
+.generatedSection .comparisonImage {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  transition: transform 0.25s ease;
+  transform-origin: center center;
+  cursor: zoom-in;
+}
+
+.generatedSection .comparisonImage:hover {
+  transform: scale(1.12);
+  z-index: 6;
+}
+
+.generatedSection .comparisonImageContainer {
+  overflow: visible;
+  padding: 8px;
+}
+
+.comparisonImagePlaceholder {
+  text-align: center;
+  color: #8a8a8a;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.comparisonImagePlaceholder p {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.comparisonImagePlaceholder small {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+/* Divider between images */
+.comparisonDivider {
+  width: 2px;
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+/* Description at bottom - Updated for structured format */
+.previewDescription {
+  padding: 15px 15px 5px;
+  background: #f8f9fa;
+  text-align: left; /* Changed from center to left */
+}
+
+.previewDescription p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #5a5a5a;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.previewFeedbackActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.previewFeedbackRow {
+  background: #f8f9fa;
+  padding: 8px 32px 18px;
+  display: flex;
+  justify-content: center;
+}
+
+.previewBottomControls {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 14px;
+}
+
+.previewNavSlotLeft {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.previewNavSlotRight {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.previewFeedbackButton {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #8a8a8a;
+  transition: all 0.2s ease;
+}
+
+.previewFeedbackButton:hover {
+  background: transparent;
+}
+
+.previewFeedbackButtonIcon {
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
+  -webkit-text-stroke: 0.35px currentColor;
+  text-shadow: 0 0 0.35px currentColor;
+}
+
+.previewFeedbackButtonActive {
+  background: transparent;
+}
+
+.previewFeedbackButtonActive .previewFeedbackButtonIcon {
+  color: #8f7a45;
+}
+
+.commentDialogOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.commentDialog {
+  width: 320px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 14px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.commentDialogClose {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  color: #8a8a8a;
+}
+
+.commentDialogTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4a4a4a;
+}
+
+.commentDialogTextarea {
+  min-height: 90px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.9rem;
+  resize: vertical;
+  outline: none;
+}
+
+.commentDialogTextarea:focus {
+  border-color: #b4cade;
+}
+
+.commentDialogSend {
+  align-self: flex-end;
+  border: none;
+  background: #9bb8cc;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.commentDialogSend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* NEW: Apply structured description styles to preview as well */
+.previewDescription .structuredDescription {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(260px, 30vw, 440px) minmax(260px, 30vw, 440px);
+  column-gap: clamp(12px, 1.6vw, 20px);
+  row-gap: 0;
+  align-items: start;
+  justify-content: center;
+}
+
+.previewDescription .focusSection {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 6px;
+  justify-content: flex-start;
+  align-items: flex-end;
+  margin-bottom: 0;
+}
+
+.previewDescription .focusAspect {
+  font-size: 0.8rem;
+}
+
+.previewDescription .targetEffectSection,
+.previewDescription .descriptionSection {
+  font-size: 0.9rem;
+  text-align: left;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.previewDescription .targetEffectSection {
+  grid-column: 2;
+}
+
+.previewDescription .descriptionSection {
+  grid-column: 3;
+}
+
+.previewDescription .targetEffectSection:last-child,
+.previewDescription .descriptionSection:last-child {
+  margin-bottom: 0;
+}
+
+.previewDescription:has(.structuredDescription) {
+  display: block;
+}
+
+.previewDescription:has(.structuredDescription) .structuredDescription {
+  display: grid;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.previewDescription:has(.structuredDescription) .focusSection {
+  grid-column: 1;
+}
+
+.previewDescription:has(.structuredDescription) .targetEffectSection {
+  grid-column: 2;
+  justify-self: end;
+  max-inline-size: clamp(260px, 30vw, 440px);
+  width: 100%;
+}
+
+.previewDescription:has(.structuredDescription) .descriptionSection {
+  grid-column: 3;
+  justify-self: start;
+  max-inline-size: clamp(260px, 30vw, 440px);
+  width: 100%;
+}
+
+.previewNavigation {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.previewNavButton {
+  background: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #5a5a5a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.previewNavButton:hover:not(:disabled) {
+  background: #e5e5e5;
+}
+
+.previewNavButton:disabled {
+  background: #f8f8f8;
+  color: #b8b8b8;
+  cursor: not-allowed;
+}
+
+.previewDescription:has(.structuredDescription) .previewNavigation {
+  display: flex;
+}
+
+.previewNavInfo {
+  font-size: 0.82rem;
+  color: #7a7a7a;
+  min-width: 140px;
+  text-align: center;
+}
+
+/* Main Results Section */
+.resultsSection {
+  padding: 0 24px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.resultsPanel {
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #D9D9D9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+  position: relative;
+}
+
+/* Grid Container */
+.resultsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+  min-height: 300px;
+  align-items: center;
+}
+
+/* Images Section with Title */
+.imagesSection {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100%;
+}
+
+.resultsSectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin: 0 0 10px 0;
+}
+
+/* Images Grid (1x4) - Fixed aspect ratio */
+.imagesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.gridImageContainer {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Default aspect ratio for loading state */
+  aspect-ratio: 16 / 9;
+}
+
+/* When container has an actual image, let it size naturally */
+.gridImageContainer:has(.gridImage) {
+  aspect-ratio: unset;
+  height: auto;
+}
+
+/* During loading state, maintain fixed aspect ratio */
+.gridImageContainer:has(.imageLoadingSpinner) {
+  aspect-ratio: 16 / 9;
+}
+
+.gridImageContainer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gridImageContainer.selected {
+  border: 3px solid #A38F53;
+  box-shadow: 0 4px 12px rgba(163, 143, 83, 0.3);
+}
+
+.gridImage {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  /* Allow image to determine container height */
+  max-width: 100%;
+}
+
+/* Add these styles to ResultsPanel.module.css */
+
+/* Enhanced header with generation info */
+.resultsHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.generationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.promptDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.promptLabel {
+  font-weight: 600;
+  color: #555;
+  min-width: 50px;
+}
+
+.promptText {
+  color: #333;
+  font-style: italic;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timestampDisplay {
+  font-size: 12px;
+  color: #888;
+  text-align: right;
+}
+
+/* Carousel navigation */
+.carouselNavigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding: 15px 0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.carouselButton {
+  background: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #5a5a5a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.carouselButton:hover:not(:disabled) {
+  background: #e5e5e5;
+  transform: scale(1.05);
+}
+
+.carouselButton:disabled {
+  background: #f8f8f8;
+  color: #cccccc;
+  cursor: not-allowed;
+}
+
+.carouselButton:disabled:hover {
+  background: #f8f8f8;
+  transform: none;
+}
+
+.carouselDots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.carouselDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.carouselDot:hover {
+  background: #bbb;
+}
+
+.carouselDot.active {
+  background: #214163;
+}
+
+.carouselDot.loading {
+  background: linear-gradient(45deg, #4a5663, #8ea4bc);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Comparison preview enhancements */
+.comparisonImagePlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 40px 20px;
+  min-height: 200px;
+  color: #666;
+}
+
+.comparisonImagePlaceholder .spinner {
+  margin-bottom: 10px;
+}
+
+.generationMeta {
+  font-size: 12px;
+  color: #666;
+  margin: 4px 0;
+}
+
+.generationPrompt {
+  font-size: 12px;
+  color: #888;
+  font-style: italic;
+  margin: 4px 0;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+/* Empty slot styling */
+.emptySlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  height: 100%;
+  min-height: 120px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* Structured description styling */
+.structuredDescription {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.targetEffectSection,
+.descriptionSection {
+  padding: 8px 0;
+}
+
+.targetEffectSection:last-child,
+.descriptionSection:last-child {
+  border-bottom: none;
+}
+
+.targetEffectSection strong,
+.descriptionSection strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .resultsGrid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .imagesSection {
+    align-items: center;
+  }
+
+  .imagesGrid {
+    gap: 10px;
+  }
+  
+  .descriptionPanel {
+    min-height: 200px;
+  }
+
+  /* 2x2 Layout in smaller screen */
+  .imagesGrid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  /* Responsive comparison view */
+  .comparisonContainer {
+    flex-direction: column;
+    padding: 60px 20px 20px;
+    gap: 20px;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+
+  .leftStackColumn {
+    flex: 0 0 auto;
+    gap: 20px;
+  }
+
+  .generatedSection {
+    flex: 0 0 auto;
+  }
+
+  .comparisonSection {
+    flex: 0 0 auto;  /* Don't force equal height distribution */
+  }
+
+  .comparisonImageContainer {
+    min-height: 240px;  /* Give proper space to avoid squishing */
+  }
+
+  .comparisonDivider {
+    width: 100%;
+    height: 2px;
+    margin: 0;
+  }
+
+  .comparisonImage {
+    max-height: 40vh;  /* Reasonable height per image */
+  }
+
+  .previewDescription .structuredDescription {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 600px;
+  }
+
+  .previewDescription {
+    display: block;
+  }
+
+  .previewDescription .targetEffectSection,
+  .previewDescription .descriptionSection {
+    text-align: center;
+  }
+
+  .previewNavigation {
+    flex-wrap: wrap;
+  }
+
+  /* Mobile structured description adjustments */
+  .focusSection {
+    justify-content: center;
+  }
+
+  .targetEffectSection,
+  .descriptionSection {
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .resultsSection {
+    padding: 0 16px 16px;
+  }
+  
+  .resultsPanel {
+    padding: 20px;
+  }
+  
+  .resultsGrid {
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .imagesSection {
+    align-items: center;
+  }
+
+  .resultsSectionTitle {
+    font-size: 1.1rem;
+    margin: 0 0 8px 0;
+  }
+
+  .imagesGrid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  
+  .descriptionPanel {
+    padding: 20px;
+  }
+  
+  .variationTitle {
+    font-size: 1.25rem;
+  }
+  
+  .variationDescription {
+    font-size: 0.9rem;
+  }
+
+  /* Mobile comparison adjustments */
+  .previewContainer {
+    max-width: 98vw;
+    max-height: 98vh;
+    border-radius: 12px;
+  }
+
+  .comparisonContainer {
+    padding: 50px 16px 16px;
+    gap: 16px;
+  }
+
+  .comparisonTitle {
+    font-size: 1rem;
+  }
+
+  .comparisonImage {
+    max-height: 35vh;
+  }
+
+  .previewDescription {
+    padding: 16px 20px 24px;
+  }
+
+  .previewDescription p {
+    font-size: 0.85rem;
+  }
+
+  .previewDescription .structuredDescription {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 600px;
+  }
+
+  .previewDescription .targetEffectSection,
+  .previewDescription .descriptionSection {
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .previewNavigation {
+    gap: 10px;
+  }
+
+  .previewNavButton {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+
+  .closePreviewButton {
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+}
+/* ============================================================================ */
+/* NEW: Image Action Button Styles for Image Replacement Feature              */
+/* ============================================================================ */
+
+.imageActionContainer {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 9;
+}
+
+.imageActionButton {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: bold;
+  letter-spacing: -2px;
+  padding: 0;
+  line-height: 1;
+}
+
+.imageActionButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.imageActionMenu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 200px;
+  z-index: 20;
+}
+
+/* Portal menu - rendered to document.body with fixed positioning */
+.imageActionMenuPortal {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 200px;
+}
+
+.imageActionMenuItem {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: white;
+  border: none;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #5a5a5a;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+  white-space: nowrap;
+}
+
+.imageActionMenuItem:last-child {
+  border-bottom: none;
+}
+
+.imageActionMenuItem:hover {
+  background: #f5f5f5;
+}
+
+.imageActionMenuItem:active {
+  background: #e5e5e5;
+}

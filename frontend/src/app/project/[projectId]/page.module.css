@@ -1,0 +1,727 @@
+/* Upload Page Styles Only */
+.container {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+} */
+
+.projectInfo {
+  display: flex;
+  align-items: center;
+}
+
+.projectId {
+  font-size: 0.875rem;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #5a5a5a;
+}
+
+.logoIcon {
+  font-size: 16px;
+  color: #5a5a5a;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Initial Upload State */
+.uploadSection {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #5a5a5a;
+  margin-bottom: 80px;
+  letter-spacing: -0.01em;
+}
+
+.dropZone {
+  background: white;
+  border: 2px dashed #e5e5e5;
+  border-radius: 12px;
+  padding: 80px 60px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.dropZone:hover {
+  border-color: #d0d0d0;
+  background: #fefefe;
+}
+
+.dropContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.dropText {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #5a5a5a;
+  margin: 0;
+}
+
+.orText {
+  font-size: 0.95rem;
+  color: #8a8a8a;
+  margin: 8px 0;
+}
+
+.browseButton {
+  background: #6b6b6b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.browseButton:hover {
+  background: #5a5a5a;
+}
+
+/* After Upload State */
+.workSection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  width: 100%;
+  max-width: 1000px;
+}
+
+.leftPanel {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.rightPanel {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin: 0 0 20px 0;
+  padding: 24px 24px 0 24px;
+}
+
+.artworkContainer {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9fafb;
+  margin: 0 24px 24px 24px;
+  /* 16:9 aspect ratio container */
+  /* aspect-ratio: 16/9; */
+}
+
+.artworkImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.resetButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.resetButton:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.referenceDropZone {
+  border: 2px dashed #e5e5e5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 24px;
+  /* 16:9 aspect ratio container */
+  aspect-ratio: 16/9;
+  min-height: unset;
+}
+
+.referenceDropZone:hover {
+  border-color: #d0d0d0;
+  background: #fefefe;
+}
+
+.referenceDropContent {
+  text-align: center;
+  padding: 20px;
+}
+
+.referenceTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #5a5a5a;
+  margin: 0 0 4px 0;
+}
+
+.referenceSubtitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #5a5a5a;
+  margin: 0 0 16px 0;
+}
+
+/* Next Button */
+.nextButtonContainer {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 100;
+}
+
+.nextButton {
+  background: #6b6b6b;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 80px;
+}
+
+.nextButton:hover {
+  background: #5a5a5a;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.nextButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading Overlay */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(248, 247, 244, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.loadingContent {
+  text-align: center;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e5e5;
+  border-top: 3px solid #6b6b6b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 1rem;
+  color: #5a5a5a;
+  margin: 0;
+}
+
+/* Analysis Page Styles */
+.analysisContainer {
+  min-height: 100vh;
+  background: #f8f7f4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.analysisHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+}
+
+.backButton {
+  background: #6b6b6b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: #5a5a5a;
+}
+
+.analysisContent {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  padding: 0 24px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Left Panel - Reference & Analysis */
+.analysisLeftPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.referenceSection {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.analysisSectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin: 0 0 20px 0;
+}
+
+.analysisImageContainer {
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.analysisImage {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.analysisPanel {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.aspectSection {
+  margin-bottom: 32px;
+}
+
+.aspectSection:last-child {
+  margin-bottom: 0;
+}
+
+.aspectTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #5a5a5a;
+  margin: 0 0 16px 0;
+}
+
+.analysisItem {
+  margin-bottom: 8px;
+}
+
+.analysisItemHeader {
+  width: 100%;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.analysisItemHeader:hover {
+  background: #eeeeee;
+}
+
+.analysisItemTitle {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #5a5a5a;
+}
+
+.expandIcon {
+  font-size: 0.8rem;
+  color: #8a8a8a;
+}
+
+.analysisItemContent {
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 0 0 6px 6px;
+  border-top: 1px solid #eeeeee;
+}
+
+.analysisItemContent p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #5a5a5a;
+}
+
+/* Right Panel - User's Work & Input */
+.analysisRightPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.targetSection {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.inputSection {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.userTextArea {
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #e5e5e5;
+  border-radius: 8px;
+  padding: 16px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: #5a5a5a;
+  background: #fafafa;
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.userTextArea:focus {
+  outline: none;
+  border-color: #d0d0d0;
+  background: white;
+}
+
+.userTextArea::placeholder {
+  color: #8a8a8a;
+}
+
+.submitButton {
+  align-self: flex-end;
+  background: #6b6b6b;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.submitButton:hover {
+  background: #5a5a5a;
+  transform: translateX(2px);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* Add these styles to page.module.css (Upload page) */
+
+/* Enhanced project info section */
+.projectInfo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.projectId {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.restoreButton {
+  background: #f8f9fa;
+  border: 1.5px solid #eceef0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.restoreButton:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #343a40;
+}
+
+/* Enhanced image upload areas */
+.uploadedImageWrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+}
+
+.removeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+  background: rgba(220, 53, 69, 0.9);
+  transform: scale(1.1);
+}
+
+.uploadZone {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fafafa;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadZone:hover {
+  border-color: #007bff;
+  background: #f8f9ff;
+}
+
+.uploadContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.uploadHint {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .analysisContent {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .analysisLeftPanel {
+    order: 2;
+  }
+  
+  .analysisRightPanel {
+    order: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .title {
+    font-size: 2rem;
+    margin-bottom: 40px;
+  }
+  
+  .dropZone {
+    padding: 60px 24px;
+    max-width: 400px;
+  }
+  
+  .workSection {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .leftPanel,
+  .rightPanel {
+    padding: 20px;
+  }
+  
+  .analysisHeader {
+    padding: 16px;
+  }
+  
+  .analysisContent {
+    padding: 0 16px 16px;
+  }
+  
+  .referenceSection,
+  .targetSection,
+  .analysisPanel,
+  .inputSection {
+    padding: 20px;
+  }
+  
+  .analysisImage {
+    max-height: 250px;
+  }
+  
+  .userTextArea {
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.75rem;
+  }
+  
+  .dropZone {
+    padding: 40px 20px;
+    max-width: 300px;
+  }
+  
+  .dropText {
+    font-size: 1.125rem;
+  }
+}

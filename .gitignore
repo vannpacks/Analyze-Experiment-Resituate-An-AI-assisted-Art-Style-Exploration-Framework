@@ -1,0 +1,70 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# input of the server
+/public/InputImages
+/public/GeneratedImages
+
+# output of the backend
+/backend/output
+/backend/image
+/backend/data
+/server/output_all
+/server/output_image
+/server/input
+output_img
+server/cropped.jpg
+server/sam_vit_h_4b8939.pth
+
+# pycache
+*.pyc
+.venv/
+
+*.npy
+
+backend/memory/chromadb/*
+memory_tmp_test/*
+
+*copy*
+
+*.ipynb
+
+*-lock.json
+*.lock
+
+/frontend_baseline/

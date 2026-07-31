@@ -1,0 +1,437 @@
+openapi: 3.0.3
+info:
+  title: Style Service API
+  description: |
+    API for AI-assisted style analysis, image generation, and multi-agent feedback.
+    Provides endpoints for base64 image upload, style analysis, variant generation,
+    and agent-based evaluation.
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+
+tags:
+  - name: Style
+    description: Style analysis and generation endpoints
+
+paths:
+  /style/upload_base64:
+    post:
+      tags: [Style]
+      summary: Upload base64 images and analyze style
+      description: Upload user and reference images (base64) and run style & content analysis.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadImagesRequest"
+      responses:
+        "200":
+          description: Successful analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadBase64Response"
+        "500":
+          description: Server error
+
+  # /style/analyze:
+  #   post:
+  #     tags: [Style]
+  #     summary: Retrieve existing style analysis
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               project_id:
+  #                 type: string
+  #               reference_image_id:
+  #                 type: integer
+  #             required: [project_id, reference_image_id]
+  #     responses:
+  #       "200":
+  #         description: Style analysis JSON
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: object
+  #       "404":
+  #         description: Analysis not found
+
+  /style/replace:
+    post:
+      tags: [Style]
+      summary: Replace image and re-analyze
+      description: |
+        Replaces reference and/or user image in the current iteration.
+        Supports generated image IDs or base64 uploads and returns updated analysis.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplaceImagesRequest"
+      responses:
+        "200":
+          description: Replacement and analysis successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadBase64Response"
+        "400":
+          description: Invalid input or iteration ID
+        "404":
+          description: Project not found
+        "500":
+          description: Server error
+
+  /style/replace_reference:
+    post:
+      tags: [Style]
+      summary: Replace reference image
+      description: Upload a new reference image and re-run style analysis.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                new_reference_image:
+                  type: string
+                  format: binary
+              required: [project_id, new_reference_image]
+      responses:
+        "200":
+          description: Replacement successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reference_image_id:
+                    type: integer
+                  analyzed_result:
+                    type: object
+  /style/generation:
+    post:
+      tags: [Style]
+      summary: Generate style variants
+      description: Generate multiple styled image variants using analyzed references.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerationRequest"
+      responses:
+        "200":
+          description: Generated variants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeneratedImageResponse"
+
+  /style/agent-feedback:
+    post:
+      tags: [Style]
+      summary: Generate multi-agent feedback
+      description: |
+        Sends a generated image to multiple AI agents
+        (professional, trending, fans) and aggregates feedback.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentFeedbackRequest"
+      responses:
+        "200":
+          description: Aggregated feedback
+          content:
+            application/json:
+              schema:
+                type: object
+        "408":
+          description: Agent timeout
+
+  /style/comment:
+    post:
+      tags: [Style]
+      summary: Record panel user comment/feedback
+      description: |
+        Receives thumbs up/down and text comments from AnalysisPanel/ResultPanel,
+        then stores the payload as request log in SQL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentRequest"
+      responses:
+        "200":
+          description: Comment accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentResponse"
+        "400":
+          description: Missing or invalid parameters
+        "404":
+          description: Project not found
+
+  /style/base_gen:
+    post:
+      tags: [Style]
+      summary: (Baseline endpoints) Combined upload + generation
+      description: |
+        Single endpoint supporting:
+        - Full mode (upload + analyze + generate)
+        - Generation-only mode (reuse existing images)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BaseGenerationRequest"
+      responses:
+        "200":
+          description: Generated image variants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeneratedImageResponse"
+
+components:
+  schemas:
+    Base64Image:
+      type: object
+      properties:
+        name:
+          type: string
+        data:
+          type: string
+          description: Base64 data URL
+      required: [name, data]
+
+    UploadImagesRequest:
+      type: object
+      properties:
+        reference_image:
+          $ref: "#/components/schemas/Base64Image"
+        user_image:
+          $ref: "#/components/schemas/Base64Image"
+        project_id:
+          type: string
+          nullable: true
+      required: [reference_image, user_image]
+
+    UploadBase64Response:
+      type: object
+      properties:
+        project_id:
+          type: string
+        user_image_id:
+          type: integer
+        reference_image_id:
+          type: integer
+        technical_analysis:
+          type: object
+        conceptual_analysis:
+          type: object
+
+    ReplaceImagesRequest:
+      type: object
+      properties:
+        reference_image:
+          oneOf:
+            - $ref: "#/components/schemas/Base64Image"
+            - type: integer
+          nullable: true
+          description: New reference image as base64 object or generated_image_id
+        user_image:
+          oneOf:
+            - $ref: "#/components/schemas/Base64Image"
+            - type: integer
+          nullable: true
+          description: New user image as base64 object or generated_image_id
+        project_id:
+          type: string
+        iteration_id:
+          type: integer
+        replace_type:
+          type: string
+          nullable: true
+          description: Optional scenario tag used for request logging
+          enum:
+            - replace_user_image_genResult_Simulate
+            - replace_user_image_genResult_Demonstrate
+            - replace_user_image_reUpload
+            - replace_reference_genResult_Simulate
+            - replace_reference_genResult_Demonstrate
+            - replace_reference_reUpload
+            - reAnalyze_reference
+      required: [project_id, iteration_id]
+
+    GenerationRequest:
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+      required: [data]
+
+    GeneratedImageDescription:
+      type: object
+      properties:
+        focus:
+          type: array
+          items:
+            type: string
+        target_effect:
+          type: string
+        description:
+          type: string
+
+    GeneratedImageResponse:
+      type: object
+      properties:
+        generated_image_id:
+          type: integer
+        user_image_id:
+          type: integer
+        reference_image_id:
+          type: integer
+        images:
+          type: string
+          description: Base64 PNG
+        description:
+          $ref: "#/components/schemas/GeneratedImageDescription"
+
+    AgentFeedbackRequest:
+      type: object
+      properties:
+        project_id:
+          type: string
+        user_image_id:
+          type: integer
+        generated_image_id:
+          type: integer
+        description:
+          type: string
+      required: [project_id, user_image_id, generated_image_id]
+
+    AnalysisPanelCommentContent:
+      type: object
+      properties:
+        aspectName:
+          type: string
+        description:
+          type: string
+        relatedTechnicalAspects:
+          type: array
+          items:
+            type: string
+        userComment:
+          type: string
+          nullable: true
+      required: [aspectName, description, relatedTechnicalAspects]
+
+    ResultPanelCommentContent:
+      type: object
+      properties:
+        focusAspect:
+          type: array
+          items:
+            type: string
+        TargetEffect:
+          type: string
+        Description:
+          type: string
+        userComment:
+          type: string
+          nullable: true
+      required: [focusAspect, TargetEffect, Description]
+
+    FeedbackPanelCommentContent:
+      type: object
+      properties:
+        feedbackAgentName:
+          type: string
+        summaryComment:
+          type: string
+        predictedImpact:
+          type: string
+        improvementSuggestions:
+          type: string
+        userComment:
+          type: string
+          nullable: true
+      required: [feedbackAgentName, summaryComment, predictedImpact, improvementSuggestions]
+
+    CommentRequest:
+      type: object
+      properties:
+        project_id:
+          type: string
+        iteration_id:
+          type: integer
+        image_id:
+          type: integer
+          nullable: true
+          description: For ResultPanel, use generated_image_id.
+        source:
+          type: string
+          enum: [Decompose, Demonstrate, Simulate]
+        comment_type:
+          type: string
+          enum:
+            - Thumbs-up
+            - Deactivate-Thumbs-up
+            - Thumbs-down
+            - Deactivate-Thumbs-down
+            - Comment
+        content:
+          oneOf:
+            - $ref: "#/components/schemas/AnalysisPanelCommentContent"
+            - $ref: "#/components/schemas/ResultPanelCommentContent"
+            - $ref: "#/components/schemas/FeedbackPanelCommentContent"
+      required: [project_id, iteration_id, source, comment_type, content]
+
+    CommentResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+      required: [status]
+
+    BaseGenerationRequest:
+      type: object
+      properties:
+        project_id:
+          type: string
+        user_image:
+          $ref: "#/components/schemas/Base64Image"
+        reference_image:
+          $ref: "#/components/schemas/Base64Image"
+        base_user_prompt:
+          type: string
+        user_image_id:
+          type: integer
+          nullable: true
+        reference_image_id:
+          type: integer
+          nullable: true
+      required: [project_id]

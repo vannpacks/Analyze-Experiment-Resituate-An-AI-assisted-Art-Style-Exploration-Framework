@@ -1,0 +1,10 @@
+Describe only the factual content of the image: objects, people, actions, spatial relations, and any visible text. 
+Do not mention style, medium, lighting, camera, or aesthetics. 
+Keep the output concise JSON:
+
+{
+  "scene": "brief description",
+  "subjects": ["main things visible"],
+  "actions": ["what they are doing"],
+  "relations": ["how they interact"],
+}
