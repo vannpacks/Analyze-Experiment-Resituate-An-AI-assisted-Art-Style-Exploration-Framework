@@ -1,4 +1,8 @@
-# Style Project
+# Analyze-Experiment-Resituate
+
+**Research Paper:** "From Style Replication to Style Exploration: Enabling Art Style Exploration with Analyze-Experiment-Resituate Framework"  
+Wen-Fan Wang, Tsai-Hsuan Lin, Chi-Lan Yang, An-Ru Cheng, Bing-Yu Chen
+*Accepted for UIST'26 (forthcoming)*
 
 ![Analyze-Experiment-Resituate hero image](01_hero_image.png)
 
@@ -50,3 +54,21 @@ cd frontend
 npm run dev
 ```
 - Application at http://localhost:3000
+
+## License
+
+This project is open source under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Citation
+
+If you use this project in your research, please cite our UIST'26 paper:
+
+```
+@inproceedings{AER2026,
+  title={From Style Replication to Style Exploration: Enabling Art Style Exploration with Analyze-Experiment-Resituate Framework},
+  booktitle={Proceedings of the 39th Annual ACM Symposium on User Interface Software and Technology},
+  year={2026}
+}
+```
+
+---
