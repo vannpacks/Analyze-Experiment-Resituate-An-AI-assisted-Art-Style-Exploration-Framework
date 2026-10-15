@@ -1,8 +1,19 @@
-# Analyze-Experiment-Resituate
+# Analyze-Experiment-Resituate (UIST'26) 
 
-**Research Paper:** "From Style Replication to Style Exploration: Enabling Art Style Exploration with Analyze-Experiment-Resituate Framework"  
-Wen-Fan Wang, Tsai-Hsuan Lin, Chi-Lan Yang, An-Ru Cheng, Bing-Yu Chen
-*Accepted for UIST'26 (forthcoming)*
+### Research Paper: "From Style Replication to Style Exploration: Enabling Art Style Exploration with Analyze-Experiment-Resituate Framework"  
+> [Wen-Fan Wang](https://vannwang.com/)¹, [Tsai-Hsuan Lin](https://xup6sophia.github.io/)¹, [Chi-Lan Yang](https://www.chilanyang.space/)², An-Ru Cheng¹, [Bing-Yu Chen](https://www.csie.ntu.edu.tw/~robin/)¹     
+> ¹ National Taiwan University
+² University of Tsukuba
+> 
+
+<p align="left">
+  <a href="https://doi.org/10.1145/3830398.3830574">
+    <img src="https://img.shields.io/badge/🌐-ACM_DOI-4285F4?style=for-the-badge">
+  </a>
+  <a href="https://doi.org/10.48550/arXiv.2608.14405">
+    <img src="https://img.shields.io/badge/arXiv-2510.15234-b31b1b?style=for-the-badge">
+  </a>
+</p>
 
 ![Analyze-Experiment-Resituate hero image](01_hero_image.png)
 
