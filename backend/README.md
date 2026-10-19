@@ -1,20 +1,23 @@
-RUN those command in bash:
-```
-conda create --name agent python=3.11.8
-conda activate agent
-cd server
-pip install -r requirements.txt
+## Setup
+
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) and listed in
+the root `pyproject.toml`. From the repository root:
+
+```bash
+uv sync
 ```
 
-## To run the backend (Still implementing linking backend and frontend)
-```
-python app.py
+API keys are entered in the app's settings page, not in a `.env` file.
+
+## To run the backend
+
+From the repository root:
+
+```bash
+uv run python -m uvicorn app:app --app-dir backend --host 127.0.0.1 --port 5000
 ```
 
-### Old server - mockup payload to frontend
-```
-fastapi run server.py
-```
+See the root `README.md` for the full developer and one-click setup.
 
 ### Backend Structure
 util/project.py

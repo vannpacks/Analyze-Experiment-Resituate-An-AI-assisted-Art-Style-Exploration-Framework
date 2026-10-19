@@ -23,10 +23,7 @@ from shared import get_current_project_language
 from prompts.prompt_config import StylePrompt
 
 # A reusable model client configured for a strong vision model
-eval_model_client = OpenAIChatCompletionClient(
-    model="gpt-4o",
-    temperature=0.5,
-)
+eval_model_client = None
 
 class EvaluationAgent(RoutedAgent):
     """
@@ -37,12 +34,12 @@ class EvaluationAgent(RoutedAgent):
         name: str,
         system_message: list[str], 
         agent_topic_type: str,
-        model_client: ChatCompletionClient = eval_model_client,
+        model_client: ChatCompletionClient = None,
         user_topic_type: str = "user"
     ) -> None:
         super().__init__(name)
         self._system_message = system_message
-        self._model_client = model_client
+        self._model_client = model_client or eval_model_client
         self._conversations: Dict[Tuple[int, int], BufferedChatCompletionContext] = {}
         self.agent_topic_type = agent_topic_type
         self.user_topic_type = user_topic_type

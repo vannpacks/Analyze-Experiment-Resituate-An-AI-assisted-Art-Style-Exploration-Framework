@@ -1,11 +1,13 @@
 import json
-import os
 import random
+from pathlib import Path
 
-PROMPT_ROOT = "prompts"
-AGENT_PROMPT_ROOT = "prompts/style/agent"
-OUTPUT_ROOT = "output"
-BOARD_ROOT = "output/boards"
+from paths import data_path, resource_path
+
+PROMPT_ROOT = resource_path("prompts")
+AGENT_PROMPT_ROOT = PROMPT_ROOT / "style" / "agent"
+OUTPUT_ROOT = data_path("output")
+BOARD_ROOT = OUTPUT_ROOT / "boards"
 
 # Read prompt from file
 def read_prompt(prompt_name: str) :
@@ -18,10 +20,8 @@ def read_prompt(prompt_name: str) :
     Returns:
         SystemMessage: The system message containing the prompt content.
     """
-    # create the PROMPT_ROOT directory if it does not exist
-    if not os.path.exists(PROMPT_ROOT):
-        os.makedirs(PROMPT_ROOT)
-    with open(os.path.join(PROMPT_ROOT, f"{prompt_name}.txt"), "r", encoding="utf-8") as file:
+    prompt_path = PROMPT_ROOT / f"{prompt_name}.txt"
+    with prompt_path.open("r", encoding="utf-8") as file:
         content = file.read()
     return content
 
@@ -34,13 +34,13 @@ def read_prompt_list(prompt_type: str) -> list[str]:
     Returns:
         list[str]: A list of strings containing the prompt content.
     """
-    prompt_path = os.path.join(AGENT_PROMPT_ROOT, prompt_type)
-    prompt_files = [f for f in os.listdir(prompt_path) if f.endswith(".txt")]
+    prompt_path = AGENT_PROMPT_ROOT / prompt_type
+    prompt_files = sorted(prompt_path.glob("*.txt"))
     if not prompt_files:
         raise FileNotFoundError("No prompt files found.")
     prompts = []
     for prompt_file in prompt_files:
-        with open(os.path.join(prompt_path, prompt_file), "r", encoding="utf-8") as file:
+        with prompt_file.open("r", encoding="utf-8") as file:
             prompts.append(file.read())
     return prompts
 
@@ -53,10 +53,9 @@ def write_plan(plan: str, output_name: str) -> None:
         output_name (str): The name of the output file (without extension).
     """
     # create the OUTPUT_ROOT directory if it does not exist
-    if not os.path.exists(OUTPUT_ROOT):
-        os.makedirs(OUTPUT_ROOT)
+    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     # write as json
-    with open(os.path.join(OUTPUT_ROOT, f"{output_name}.json"), "w", encoding="utf-8") as file:
+    with (OUTPUT_ROOT / f"{output_name}.json").open("w", encoding="utf-8") as file:
         file.write(plan)
         
         
@@ -69,10 +68,9 @@ def write_json(content: str, output_name: str) -> None:
         output_name (str): The name of the output file (without extension).
     """
     # create the OUTPUT_ROOT directory if it does not exist
-    if not os.path.exists(OUTPUT_ROOT):
-        os.makedirs(OUTPUT_ROOT)
+    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     # write as json
-    with open(os.path.join(OUTPUT_ROOT, f"{output_name}.json"), "w", encoding="utf-8") as file:
+    with (OUTPUT_ROOT / f"{output_name}.json").open("w", encoding="utf-8") as file:
         file.write(content)
 
 def write_board(board_id:int, content: dict, stage: str) -> None:
@@ -84,17 +82,15 @@ def write_board(board_id:int, content: dict, stage: str) -> None:
         content (str): The board content, as a JSON string or dict.
         stage (str): The board stage.
     """
-    storage_path = os.path.join(BOARD_ROOT, stage)
-    # create the BOARD_ROOT directory if it does not exist
-    if not os.path.exists(storage_path):
-        os.makedirs(storage_path)
+    storage_path = BOARD_ROOT / stage
+    storage_path.mkdir(parents=True, exist_ok=True)
     
     # Parse content if it's a JSON string
     board_content = {
         "board_id": board_id,
         "content": content
     }
-    with open(os.path.join(storage_path, f"{board_id:04d}.json"), "w", encoding="utf-8") as file:
+    with (storage_path / f"{board_id:04d}.json").open("w", encoding="utf-8") as file:
         json.dump(board_content, file, ensure_ascii=False, indent=2)
 
 
@@ -108,8 +104,7 @@ def write_memory_context(memory_context: str, output_name: str) -> None:
         output_name (str): The name of the output file (without extension).
     """
     # create the OUTPUT_ROOT directory if it does not exist
-    if not os.path.exists(OUTPUT_ROOT):
-        os.makedirs(OUTPUT_ROOT)
+    OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     # write as json
-    with open(os.path.join(OUTPUT_ROOT, f"{output_name}.json"), "w", encoding="utf-8") as file:
+    with (OUTPUT_ROOT / f"{output_name}.json").open("w", encoding="utf-8") as file:
         file.write(memory_context)

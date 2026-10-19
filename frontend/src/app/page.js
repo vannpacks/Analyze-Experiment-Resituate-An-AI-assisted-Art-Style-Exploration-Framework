@@ -2,23 +2,15 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { DEFAULT_PROJECT_ID } from '../utils/projectConfig';
 
 export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Generate a random projectId
-    const generateProjectId = () => {
-      const timestamp = Date.now().toString(36);
-      const randomStr = Math.random().toString(36).substring(2, 8);
-      return `${timestamp}${randomStr}`;
-    };
-
-    const projectId = generateProjectId();
-    console.log('Generated new projectId:', projectId);
+    console.log('Using fixed local workspace projectId:', DEFAULT_PROJECT_ID);
     
-    // Redirect directly to analysis page
-    router.replace(`/project/${projectId}`);
+    router.replace(`/project/?id=${encodeURIComponent(DEFAULT_PROJECT_ID)}`);
   }, [router]);
 
   return (
@@ -40,7 +32,7 @@ export default function HomePage() {
       }}>
         <div style={{ marginBottom: '1rem' }}>
           <span style={{ fontSize: '2rem' }}>✦</span>
-          <span style={{ fontSize: '1.5rem', marginLeft: '0.5rem', fontWeight: '600' }}>Style</span>
+          <span style={{ fontSize: '1.5rem', marginLeft: '0.5rem', fontWeight: '600' }}>Style-AER</span>
         </div>
         <p style={{ color: '#666', margin: 0 }}>Initializing...</p>
       </div>

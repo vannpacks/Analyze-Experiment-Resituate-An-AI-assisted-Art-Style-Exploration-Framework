@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import AuthGuard from "../components/AuthGuard";  // 新增：引入 AuthGuard
+import SetupGuard from "../components/SetupGuard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Style",
+  title: "Style-AER",
   description: "style explorer",
 };
 
@@ -25,9 +25,9 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning={true}
       >
-        <AuthGuard>
+        <SetupGuard>
           {children}
-        </AuthGuard>
+        </SetupGuard>
       </body>
     </html>
   );

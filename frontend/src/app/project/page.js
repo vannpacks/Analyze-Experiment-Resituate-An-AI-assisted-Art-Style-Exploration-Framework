@@ -1,19 +1,22 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { StorageManager } from '../../../utils/storageManager';
+import { Suspense, useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { StorageManager } from '../../utils/storageManager';
+import { apiFetchJson } from '../../utils/api';
+import SettingsButton from '../../components/SettingsButton';
+import { DEFAULT_PROJECT_ID } from '../../utils/projectConfig';
 import styles from './page.module.css';
 
-export default function ArtworkUpload() {
+function ArtworkUploadContent() {
   const [uploadedArtwork, setUploadedArtwork] = useState(null);
   const [referenceWork, setReferenceWork] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const artworkInputRef = useRef(null);
   const referenceInputRef = useRef(null);
   const router = useRouter();
-  const params = useParams();
-  const projectId = params.projectId;
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('id') || DEFAULT_PROJECT_ID;
 
   const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
   const ALLOWED_IMAGE_TYPES = new Set(['image/png', 'image/jpeg']);
@@ -235,21 +238,10 @@ export default function ArtworkUpload() {
 
       console.log('Sending base64 data to API with projectId:', projectId);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/style/upload_base64`, {
+      const data = await apiFetchJson('/style/upload_base64', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const message = errorData?.detail || `Failed to upload images (HTTP ${response.status})`;
-        throw new Error(message);
-      }
-
-      const data = await response.json();
       
       console.log('Upload response:', data);
       
@@ -355,13 +347,14 @@ export default function ArtworkUpload() {
       window.__appData = analysisDataForWindow;
 
       // Navigate to analysis page with projectId
-      router.push(`/project/${projectId}/analysis`);
+      router.push(`/project/analysis/?id=${encodeURIComponent(projectId)}`);
     } catch (error) {
       console.error('Error uploading images:', error);
       alert(error.message || 'Failed to upload images. Please try again.');
     } finally {
       setIsLoading(false);
     }
+
   };
 
   // Cleanup on component unmount
@@ -370,6 +363,8 @@ export default function ArtworkUpload() {
       if (uploadedArtwork?.url?.startsWith('blob:')) {
         URL.revokeObjectURL(uploadedArtwork.url);
       }
+
+
       if (referenceWork?.url?.startsWith('blob:')) {
         URL.revokeObjectURL(referenceWork.url);
       }
@@ -387,7 +382,7 @@ export default function ArtworkUpload() {
       <div className={styles.header}>
         <div className={styles.logo}>
           <span className={styles.logoIcon}>✦</span>
-          <span className={styles.logoText}>Style</span>
+          <span className={styles.logoText}>Style-AER</span>
         </div>
         <div className={styles.projectInfo}>
           <button 
@@ -397,6 +392,7 @@ export default function ArtworkUpload() {
           >
             Clear All Sessions
           </button>
+          <SettingsButton />
         </div>
       </div>
 
@@ -525,5 +521,13 @@ function LoadingOverlay() {
         <p className={styles.loadingText}>Analyzing Artwork...</p>
       </div>
     </div>
+  );
+}
+
+export default function ArtworkUpload() {
+  return (
+    <Suspense fallback={<div>Loading project...</div>}>
+      <ArtworkUploadContent />
+    </Suspense>
   );
 }

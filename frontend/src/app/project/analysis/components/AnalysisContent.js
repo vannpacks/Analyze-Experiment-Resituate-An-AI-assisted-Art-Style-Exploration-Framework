@@ -395,7 +395,7 @@ export default function AnalysisContent({
                                   </div>
                                 )}
 
-                                <div className={styles.feedbackActions}>
+                                {/* <div className={styles.feedbackActions}>
                                   {(feedbackState === null || feedbackState === 'up') && (
                                     <button
                                       className={`${styles.feedbackButton} ${feedbackState === 'up' ? styles.feedbackButtonActive : ''}`}
@@ -438,7 +438,7 @@ export default function AnalysisContent({
                                   >
                                     <i className={`bi bi-chat-square-text ${styles.feedbackButtonIcon}`}></i>
                                   </button>
-                                </div>
+                                </div> */}
                               </div>
                             </div>
                               );
@@ -495,7 +495,7 @@ export default function AnalysisContent({
                               </div>
                               <div className={styles.selectableContent}>
                                 <p className={styles.technicalDescription}>{item}</p>
-                                <div className={styles.feedbackActions}>
+                                {/* <div className={styles.feedbackActions}>
                                   {(feedbackState === null || feedbackState === 'up') && (
                                     <button
                                       className={`${styles.feedbackButton} ${feedbackState === 'up' ? styles.feedbackButtonActive : ''}`}
@@ -538,7 +538,7 @@ export default function AnalysisContent({
                                   >
                                     <i className={`bi bi-chat-square-text ${styles.feedbackButtonIcon}`}></i>
                                   </button>
-                                </div>
+                                </div> */}
                               </div>
                             </div>
                               );

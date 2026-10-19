@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { StorageManager } from '../../../../../utils/storageManager';
+import { StorageManager } from '../../../../utils/storageManager';
 import styles from './ResultsPanel.module.css';
 
 export default function ResultsPanel({
@@ -914,7 +914,7 @@ export default function ResultsPanel({
                       )}
                     </div>
 
-                    <div className={styles.previewFeedbackActions}>
+                    {/* <div className={styles.previewFeedbackActions}>
                       {(feedbackState === null || feedbackState === 'up') && (
                         <button
                           className={`${styles.previewFeedbackButton} ${feedbackState === 'up' ? styles.previewFeedbackButtonActive : ''}`}
@@ -953,7 +953,7 @@ export default function ResultsPanel({
                       >
                         <i className={`bi bi-chat-square-text ${styles.previewFeedbackButtonIcon}`}></i>
                       </button>
-                    </div>
+                    </div> */}
 
                     <div className={styles.previewNavSlotRight}>
                       {previewNavigableIndexes.length > 1 && (

@@ -3,12 +3,12 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 import base64
-import uuid
 import json
 from pathlib import Path
 import mimetypes
 import asyncio
 import io
+import traceback
 import warnings
 from PIL import Image, ImageFile, UnidentifiedImageError
 # Import core services
@@ -24,6 +24,7 @@ from dataclasses import asdict
 from shared import model_general
 from config import Config
 from utils.request_log_db import log_request_call
+from utils.model import ProviderAPIError
 
 router = APIRouter(prefix="/style", tags=["Style"])
 
@@ -311,7 +312,7 @@ async def upload_images_base64(request: UploadImagesRequest):
     """
     try:
         # Create or get existing project with meaningful project ID
-        project_id = request.project_id or str(uuid.uuid4())
+        project_id = request.project_id or Config.DEFAULT_PROJECT_ID
         
         # Ensure project ID is meaningful (not random UUID from frontend)
         # The frontend passes project IDs like "lxyz123abc" which are more readable
@@ -404,6 +405,9 @@ async def upload_images_base64(request: UploadImagesRequest):
     except HTTPException as e:
         print(f"upload_images_base64 HTTPException: {e.detail}")
         raise
+    except ProviderAPIError as e:
+        print(f"upload_images_base64 provider error: {e}")
+        raise HTTPException(status_code=502, detail=str(e)) from e
     except Exception as e:
         print(f"Error in upload_images: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing images: {str(e)}")
@@ -667,6 +671,8 @@ async def generate_variants(request: GenerationRequest):
             # Call your NEW generator method
             # Note: We iterate directly. FastAPI runs this in a threadpool automatically.
             count = 0
+            successful_count = 0
+            generation_errors = []
             style_iterator = image_generator.generate_style_variations_stream(
                 user_prompt, 
                 user_image_path, 
@@ -683,6 +689,10 @@ async def generate_variants(request: GenerationRequest):
                 # Extract raw data from the generator result
                 image_path = result.get("image_path")
                 status = result.get("status")
+                if status == "success":
+                    successful_count += 1
+                elif result.get("error"):
+                    generation_errors.append(result["error"])
                 generated_image_id = result.get("generated_image_id") # Ensure your generator yields this!
                 
                 # Prepare description fields
@@ -717,7 +727,8 @@ async def generate_variants(request: GenerationRequest):
                     "iteration_id": iteration_id,
                     "user_image_id": user_image_id,
                     "generated_image_id": generated_image_id,
-                    "status": status  # Helpful for frontend to know if it failed
+                    "status": status,
+                    "error": result.get("error"),
                 }
 
                 # 5. Yield as Server-Sent Event (SSE)
@@ -732,17 +743,23 @@ async def generate_variants(request: GenerationRequest):
             # This runs only after the loop above is 100% finished
             final_message = {
                 "type": "completed",
-                "total_generated": count,
+                "total_generated": successful_count,
+                "status": "success" if successful_count > 0 else "failed",
+                "error": None if successful_count > 0 else (
+                    generation_errors[0] if generation_errors
+                    else "Image generation produced no results."
+                ),
                 "message": "DONE"
             }
-            yield f"data: {json.dumps(final_message, indent=4, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps(final_message, ensure_ascii=False)}\n\n"
         
         # 6. Return StreamingResponse
         print(f"Starting stream for project {project_id}")
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     except Exception as e:
-        print(f"Error in generate_variants: {str(e)}")
+        print(f"Error in generate_variants: {type(e).__name__}: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error generating variants: {str(e)}")
 
 

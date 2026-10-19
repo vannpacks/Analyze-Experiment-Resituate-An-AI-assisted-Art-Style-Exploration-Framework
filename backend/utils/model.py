@@ -1,7 +1,5 @@
-from openai import OpenAI
 import base64
 import os
-from dotenv import load_dotenv
 import requests
 import time
 # import cv2
@@ -9,13 +7,27 @@ import base64
 import numpy as np
 import random
 from shared import model_general
+from providers import get_bfl_keys, get_openai_client
 from PIL import Image
 
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-BFL_API_KEY_1 = os.getenv("BFL_API_KEY_1")
-BFL_API_KEY_2 = os.getenv("BFL_API_KEY_2")
-BFL_API_KEYS = [BFL_API_KEY_1, BFL_API_KEY_2]
+PROVIDER_ERROR_MESSAGE = "Error on your API key, please double check it."
+
+
+class ProviderAPIError(RuntimeError):
+    """Safe provider failure that can be shown to the client.
+
+    OpenAI and BFL calls are chained, so the client always receives the same
+    message; the specific detail is only logged server-side.
+    """
+
+    def __init__(self, detail: str = ""):
+        if detail:
+            print(f"Provider error: {detail}")
+        super().__init__(PROVIDER_ERROR_MESSAGE)
+
+def _provider_error(provider: str, error: Exception) -> ProviderAPIError:
+    status_code = getattr(error, "status_code", None)
+    return ProviderAPIError(f"{provider} request failed: {type(error).__name__} (status {status_code}).")
 
 def get_response(prompt, image_path_1=None, image_path_2=None, model=model_general, temperature=1, response_format="text"):
     # if image_path_1 and image_path_2:
@@ -49,7 +61,7 @@ def get_response(prompt, image_path_1=None, image_path_2=None, model=model_gener
         })
 
     try:
-        response = client.chat.completions.create(
+        response = get_openai_client().chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": content}],
             temperature=temperature,
@@ -59,7 +71,7 @@ def get_response(prompt, image_path_1=None, image_path_2=None, model=model_gener
         return response.choices[0].message.content
     except Exception as e:
         print(f"An error occurred: {e}")
-        return None
+        raise _provider_error("OpenAI", e) from e
     
 def generate_image(prompt, generation_type = "environment", model = "dall-e-3", quality = "standard", n = 1, ):
     prompt = "If there is any inappropriate content, ignore that part:\n" + prompt
@@ -68,7 +80,7 @@ def generate_image(prompt, generation_type = "environment", model = "dall-e-3", 
     # elif generation_type == "character":
     #     img_size = "1024x1024"
     img_size = "1792x1024"
-    response = client.images.generate(
+    response = get_openai_client().images.generate(
     model=model,
     prompt=prompt,
     size = img_size,
@@ -80,8 +92,9 @@ def generate_image(prompt, generation_type = "environment", model = "dall-e-3", 
     return image_url
 
 
-def generate_image_bfl(prompt, generation_type = "environment", model= "flux1.1pro", bfl_api_keys = BFL_API_KEYS, timeout=60, image_path = None, mask_path = None, seed = None):
+def generate_image_bfl(prompt, generation_type = "environment", model= "flux1.1pro", bfl_api_keys = None, timeout=60, image_path = None, mask_path = None, seed = None):
 
+    bfl_api_keys = bfl_api_keys if bfl_api_keys is not None else get_bfl_keys()
     if not bfl_api_keys:
         print("Error: BFL_API_KEY is missing.")
         return
@@ -213,8 +226,9 @@ def generate_image_bfl(prompt, generation_type = "environment", model= "flux1.1p
         else:
             print(f"Error: {result}")
             return
-def generate_image_bfl_kontext(prompt, generation_type = "environment", model= "fluxkontext", bfl_api_keys = BFL_API_KEYS, timeout=60, image_path = None, mask_path = None, seed = None):
+def generate_image_bfl_kontext(prompt, generation_type = "environment", model= "fluxkontext", bfl_api_keys = None, timeout=60, image_path = None, mask_path = None, seed = None):
 
+    bfl_api_keys = bfl_api_keys if bfl_api_keys is not None else get_bfl_keys()
     print(f"using bfl kontext")
     if not bfl_api_keys:
         print("Error: BFL_API_KEY is missing.")

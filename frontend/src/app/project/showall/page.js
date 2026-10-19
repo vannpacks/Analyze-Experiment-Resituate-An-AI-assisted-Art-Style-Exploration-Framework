@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { apiFetchJson } from '../../../utils/api';
+import { DEFAULT_PROJECT_ID } from '../../../utils/projectConfig';
 import styles from './page.module.css';
 
-export default function ProjectShowAllPage() {
-  const params = useParams();
-  const projectId = params.projectId;
+function ProjectShowAllPageContent() {
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('id') || DEFAULT_PROJECT_ID;
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,17 +28,10 @@ export default function ProjectShowAllPage() {
         setLoading(true);
         setError('');
 
-        const response = await fetch(`/api/project/${projectId}/showall`, {
+        const payload = await apiFetchJson(`/project/${projectId}/showall`, {
           signal: controller.signal,
           cache: 'no-store',
         });
-
-        if (!response.ok) {
-          const payload = await response.json().catch(() => ({}));
-          throw new Error(payload.detail || `Request failed: ${response.status}`);
-        }
-
-        const payload = await response.json();
         setData(payload);
 
         const defaults = {};
@@ -48,9 +43,12 @@ export default function ProjectShowAllPage() {
         if (e.name !== 'AbortError') {
           setError(e.message || 'Failed to load project data');
         }
+
       } finally {
         setLoading(false);
       }
+
+
     };
 
     load();
@@ -566,5 +564,13 @@ export default function ProjectShowAllPage() {
         </section>
       )}
     </main>
+  );
+}
+
+export default function ProjectShowAllPage() {
+  return (
+    <Suspense fallback={<div>Loading project history...</div>}>
+      <ProjectShowAllPageContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { StorageManager } from '../../../../../utils/storageManager';
+import { StorageManager } from '../../../../utils/storageManager';
 import styles from './FeedbackPanel.module.css';
 
 export default function FeedbackPanel({
@@ -411,7 +411,10 @@ export default function FeedbackPanel({
               style={{ transform: `translateX(-${currentFeedbackIndex * 100}%)` }}
             >
               {generationFeedback.map((feedbackItem, index) => (
-                <div key={feedbackItem.id} className={styles.feedbackCard}>
+                <div
+                  key={feedbackItem.id || `${feedbackItem.iteration_id || 'unknown'}-${feedbackItem.generated_image_id ?? index}`}
+                  className={styles.feedbackCard}
+                >
                   {/* Left side - Selected Image (1/3) */}
                   <div className={styles.feedbackImageSection}>
                     <div className={styles.feedbackImageContainer}>
@@ -524,7 +527,7 @@ export default function FeedbackPanel({
                                   </div>
                                 </div>
 
-                                <div className={styles.singleAgentFooter}>
+                                {/* <div className={styles.singleAgentFooter}>
                                   <div className={styles.singleAgentFeedbackActions}>
                                     {(feedbackState === null || feedbackState === 'up') && (
                                       <button
@@ -566,7 +569,7 @@ export default function FeedbackPanel({
                                       <i className={`bi bi-chat-square-text ${styles.singleAgentFeedbackButtonIcon}`}></i>
                                     </button>
                                   </div>
-                                </div>
+                                </div> */}
                               </div>
                             );
                           })()

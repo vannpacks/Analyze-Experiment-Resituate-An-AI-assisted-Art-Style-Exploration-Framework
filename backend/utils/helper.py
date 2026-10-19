@@ -42,6 +42,8 @@ def format_json_for_readability(data_string: str) -> str:
     return format_recursive(data)
 
 def extract_json_from_string(text: str) -> str | None:
+    if text is None:
+        raise ValueError("The provider returned no response.")
     """
     Finds and extracts the first valid JSON object block from a string.
     Returns the JSON string if found, otherwise None.
@@ -88,4 +90,3 @@ def combine_json_results(results):
     else:
         # fallback: join as string
         return "\n".join([str(res) for res in results])
-

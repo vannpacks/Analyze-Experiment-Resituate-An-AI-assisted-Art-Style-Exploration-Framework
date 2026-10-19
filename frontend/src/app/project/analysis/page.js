@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import { StorageManager } from '../../../../utils/storageManager';
+import { Suspense, useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { StorageManager } from '../../../utils/storageManager';
+import { apiFetchJson, apiFetchStream } from '../../../utils/api';
+import SettingsButton from '../../../components/SettingsButton';
+import { DEFAULT_PROJECT_ID } from '../../../utils/projectConfig';
 import AnalysisContent from './components/AnalysisContent';
 import ResultsPanel from './components/ResultsPanel';
 import FeedbackPanel from './components/FeedbackPanel';
 import styles from './analysis.module.css';
 
-export default function AnalysisPage() {
+function AnalysisPageContent() {
   // Core data states
   const [analysisData, setAnalysisData] = useState(null);
   const [referenceWork, setReferenceWork] = useState(null);
@@ -58,8 +61,8 @@ export default function AnalysisPage() {
   const [expandedAgent, setExpandedAgent] = useState(null);
 
   const router = useRouter();
-  const params = useParams();
-  const projectId = params.projectId;
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('id') || DEFAULT_PROJECT_ID;
   // const externalLinkUrl = process.env.NEXT_PUBLIC_DAILY_QUESTIONNAIRE_LINK;
 
 const handleReplaceImage = async (targetType, imageData, replaceType = null) => {
@@ -69,6 +72,7 @@ const handleReplaceImage = async (targetType, imageData, replaceType = null) => 
     if (targetType === 'reference') {
       setReplacingReferenceImage(true);
     }
+
     // Prepare request payload based on target type
     let requestBody = {
       project_id: projectId,
@@ -87,6 +91,7 @@ const handleReplaceImage = async (targetType, imageData, replaceType = null) => 
       if (!isBase64Upload) {
         requestBody.reference_image_iteration_id = imageData.iteration_id ?? projectIds.iteration_id;
       }
+
       requestBody.user_image = null;
     } else {
       requestBody.reference_image = null;
@@ -98,18 +103,10 @@ const handleReplaceImage = async (targetType, imageData, replaceType = null) => 
         requestBody.user_image_iteration_id = imageData.iteration_id ?? projectIds.iteration_id;
       }
     }
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/style/replace`, {
+    const result = await apiFetchJson('/style/replace', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
     // For base64 uploads, create a blob URL; for generated images, use the provided URL
     const imageUrl = isBase64Upload
       ? (typeof imageData.base64 === 'string' && imageData.base64.startsWith('data:')
@@ -545,6 +542,164 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
     return { iteration_id, user_image_id, reference_image_id };
   };
 
+  const rehydrateFromBackend = async (projectId) => {
+    const payload = await apiFetchJson(`/project/${projectId}/showall`, { cache: 'no-store' });
+    const iterations = Array.isArray(payload?.iterations) ? payload.iterations : [];
+    const sortedIterations = [...iterations].sort((a, b) => b.iteration_id - a.iteration_id);
+    const iteration = sortedIterations.find(
+      (candidate) => candidate.latest_assets?.user_image && candidate.latest_assets?.reference_image
+    );
+    const generationIteration = sortedIterations.find(
+      (candidate) => candidate.groups?.some((candidateGroup) => candidateGroup.generated_images?.length > 0)
+    );
+    const group = generationIteration?.groups?.find(
+      (candidateGroup) => candidateGroup.generated_images?.length > 0
+    );
+    const latestAssets = iteration?.latest_assets;
+    if (!iteration || !latestAssets?.user_image || !latestAssets?.reference_image) {
+      return false;
+    }
+
+    const toApiFileUrl = (url) => (url?.startsWith('/') ? `/api${url}` : url);
+    const toDataUrl = async (url) => {
+      const response = await fetch(toApiFileUrl(url));
+      if (!response.ok) throw new Error(`Unable to restore image (${response.status})`);
+      const blob = await response.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    };
+
+    const userImage = latestAssets.user_image;
+    const referenceImage = latestAssets.reference_image;
+    const [userBase64, referenceBase64] = await Promise.all([
+      toDataUrl(userImage.url),
+      toDataUrl(referenceImage.url),
+    ]);
+    const setResult = await StorageManager.saveProjectImageSet(
+      projectId,
+      { name: `user-${userImage.image_id}.png`, base64: userBase64 },
+      { name: `reference-${referenceImage.image_id}.png`, base64: referenceBase64 },
+      null,
+      'generated',
+      iteration.iteration_id
+    );
+    if (!setResult.success) {
+      throw new Error('Unable to restore the project image set.');
+    }
+    await StorageManager.updateImageSetStatus(
+      projectId,
+      setResult.setId,
+      'generated',
+      {
+        iteration_id: iteration.iteration_id,
+        user_image_id: userImage.image_id,
+        reference_image_id: referenceImage.image_id,
+      }
+    );
+
+    const rawStyleAnalysis = latestAssets.style_analysis || group?.style_analysis;
+    const styleAnalysis = rawStyleAnalysis
+      ? {
+          technical_analysis: rawStyleAnalysis.technical_analysis || rawStyleAnalysis.technical_aspect || {},
+          conceptual_analysis: rawStyleAnalysis.conceptual_analysis || rawStyleAnalysis.conceptual_aspect || {},
+        }
+      : null;
+    const projectIds = {
+      project_id: projectId,
+      iteration_id: iteration.iteration_id,
+      user_image_id: userImage.image_id,
+      reference_image_id: referenceImage.image_id,
+      uploadTimestamp: new Date().toISOString(),
+    };
+    const referenceWork = {
+      url: toApiFileUrl(referenceImage.url),
+      name: `reference-${referenceImage.image_id}.png`,
+      base64: referenceBase64,
+      setId: setResult.setId,
+      status: 'generated',
+      iteration_id: iteration.iteration_id,
+    };
+    const uploadedArtwork = {
+      url: toApiFileUrl(userImage.url),
+      name: `user-${userImage.image_id}.png`,
+      base64: userBase64,
+      setId: setResult.setId,
+      status: 'generated',
+      iteration_id: iteration.iteration_id,
+    };
+    const generationItems = (group?.generated_images || []).map((image) => ({
+      images: toApiFileUrl(image.url),
+      generated_image_id: image.generated_image_id,
+      user_image_id: userImage.image_id,
+      reference_image_id: referenceImage.image_id,
+      iteration_id: generationIteration?.iteration_id || iteration.iteration_id,
+      description: image.style_description || '',
+    }));
+    const generationResult = {
+      items: generationItems,
+      timestamp: new Date().toISOString(),
+      image_set_id: setResult.setId,
+      iteration_id: iteration.iteration_id,
+      userInput: '',
+      droppedReferences: [],
+    };
+    const feedback = generationItems.flatMap((item, index) => {
+      const source = group?.generated_images?.[index]?.feedback;
+      return source
+        ? [{
+            id: `rehydrated-${iteration.iteration_id}-${item.generated_image_id}`,
+            selectedImage: item.images,
+            description: item.description,
+            generated_image_id: item.generated_image_id,
+            user_image_id: userImage.image_id,
+            iteration_id: iteration.iteration_id,
+            image_set_id: setResult.setId,
+            feedbackData: source,
+            timestamp: new Date().toISOString(),
+            projectId,
+            generationPrompt: '',
+          }]
+        : [];
+    });
+
+    setAnalysisData(styleAnalysis);
+    setProjectIds(projectIds);
+    setReferenceWork(referenceWork);
+    setUploadedArtwork(uploadedArtwork);
+    setGenerationResult(generationResult);
+    setShowResultsPanel(generationItems.length > 0);
+    setGenerationFeedback(feedback);
+    await StorageManager.saveAnalysisPageState({
+      analysisData: styleAnalysis,
+      projectIds,
+      referenceWork,
+      uploadedArtwork,
+      generationResult: null,
+      userInput: '',
+      droppedReferences: [],
+      selectedImageIndex: null,
+      showResultsPanel: generationItems.length > 0,
+      generatingImages: false,
+      generationFeedback: feedback,
+      toggleEnabled: false,
+      skipGenerationSave: true,
+    });
+    await StorageManager.saveProjectGenerationResult(
+      projectId,
+      generationResult,
+      setResult.setId,
+      iteration.iteration_id
+    );
+    if (feedback.length > 0) {
+      await StorageManager.saveGenerationFeedback(feedback, projectId);
+    }
+    return true;
+  };
+
   useEffect(() => {
     if (!projectId) return;
     
@@ -768,6 +923,14 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
           }
         }
 
+        if (!setId && !savedState) {
+          try {
+            await rehydrateFromBackend(projectId);
+          } catch (error) {
+            console.error('[loadData] Backend rehydrate failed:', error);
+          }
+        }
+
         setLoading(false);
       } catch (error) {
         console.error('[loadData] Error loading data:', error);
@@ -778,7 +941,7 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
     loadData();
   }, [projectId]);
   const handleBack = () => {
-    router.push(`/project/${projectId}`);
+    router.push(`/project/?id=${encodeURIComponent(projectId)}`);
   };
 
   const ensureImagesHaveBase64 = async () => {
@@ -859,6 +1022,7 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
       return;
     }
 
+    let processingStage = 'preparing generation';
     setSubmitting(true);
     setGeneratingImages(true);
     setShowResultsPanel(true);
@@ -944,28 +1108,68 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
         return;
       }
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/style/generation`, {
+      processingStage = 'starting image generation';
+      const response = await apiFetchStream('/style/generation', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(requestBody),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Generation request failed:', errorText);
-        throw new Error(`Failed to generate images: ${response.status} - ${errorText}`);
-      }
 
       // Handle SSE stream response
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       const generatedItems = [];
+      const generationErrors = [];
       let buffer = '';
       let streamComplete = false;
+      let completedEvent = null;
+
+      const processSseEvent = (line) => {
+        if (!line.startsWith('data: ')) {
+          return;
+        }
+
+        try {
+          const event = JSON.parse(line.slice(6));
+          console.log('Received SSE event:', event);
+
+          if (event.type === 'completed') {
+            completedEvent = event;
+            console.log('Generation completed:', event.message, 'Total items:', event.total_generated);
+            streamComplete = true;
+            if (event.error) {
+              generationErrors.push(event.error);
+            }
+            return;
+          }
+
+          if (event.type === 'image_result') {
+            if (event.status === 'success') {
+              const item = {
+                description: event.description,
+                images: event.images,
+                user_image_id: event.user_image_id,
+                reference_image_id: projectIds.reference_image_id,
+                generated_image_id: event.generated_image_id,
+                iteration_id: event.iteration_id
+              };
+
+              console.log('Adding item to generatedItems:', item);
+              generatedItems.push(item);
+              console.log('Updating UI with', generatedItems.length, 'items');
+              setGenerationResult({ items: [...generatedItems] });
+            } else {
+              generationErrors.push(
+                event.error || `Image ${event.generated_image_id ?? 'unknown'} failed to generate.`
+              );
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing SSE event:', e, 'Line:', line);
+        }
+      };
 
       while (!streamComplete) {
+        processingStage = 'receiving generated images';
         const { value, done } = await reader.read();
         if (done) {
           console.log('Stream reading completed (reader done)');
@@ -977,40 +1181,23 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6);
-            try {
-              const event = JSON.parse(jsonStr);
-              console.log('Received SSE event:', event);
-              
-              if (event.type === 'completed') {
-                console.log('Generation completed:', event.message, 'Total items:', event.total_generated);
-                streamComplete = true; // Set flag to exit outer while loop
-                break; // Exit inner for loop
-              }
-              
-              if (event.type === 'image_result') {                
-                if (event.status === 'success') {
-                  const item = {
-                    description: event.description,
-                    images: event.images,
-                    user_image_id: event.user_image_id,
-                    reference_image_id: projectIds.reference_image_id,
-                    generated_image_id: event.generated_image_id,
-                    iteration_id: event.iteration_id
-                  };
-                  
-                  console.log('Adding item to generatedItems:', item);
-                  generatedItems.push(item);
-                  console.log('Updating UI with', generatedItems.length, 'items');
-                  setGenerationResult({ items: [...generatedItems] });
-                }
-              }
-            } catch (e) {
-              console.error('Error parsing SSE event:', e, 'Line:', line);
-            }
-          }
+          processSseEvent(line);
+          if (streamComplete) break;
         }
+      }
+
+      if (buffer.trim()) {
+        processSseEvent(buffer.trim());
+      }
+
+      if (generatedItems.length === 0) {
+        throw new Error(
+          generationErrors.length > 0
+            ? generationErrors.join(' ')
+            : completedEvent
+              ? `Image generation completed without producing any images (backend reported ${completedEvent.total_generated ?? 0} results).`
+              : 'Image generation stream ended before completion.'
+        );
       }
       // NEW: Validate iteration_id in response
       if (generatedItems.length > 0) {
@@ -1032,14 +1219,17 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
       setGenerationResult(generationData);
 
       // Save to project-specific generation history
+      processingStage = 'saving generation history';
       await StorageManager.saveProjectGenerationResult(
         projectId, 
         generationData,
-        uploadedArtwork?.setId || referenceWork?.setId
+        uploadedArtwork?.setId || referenceWork?.setId,
+        projectIds.iteration_id
       );
 
       // Update image set status to 'generated'
       if (uploadedArtwork?.setId) {
+        processingStage = 'updating image set status';
         await StorageManager.updateImageSetStatus(
           projectId,
           uploadedArtwork.setId,
@@ -1048,10 +1238,11 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
       }
 
       // Save full state (including generation result)
+      processingStage = 'saving analysis state';
       await saveCurrentState(true, false); // false = include generation result
     } catch (error) {
-      console.error('Error in handleSubmit:', error);
-      alert(`Failed to generate images: ${error.message}`);
+      console.error(`Error in handleSubmit during ${processingStage}:`, error);
+      alert(`Failed during ${processingStage}: ${error.message}`);
       
       // Reset states on error
       setGenerationResult(null);
@@ -1147,17 +1338,10 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
         timestamp: new Date().toISOString(),
       };
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/style/agent-feedback`, {
+      const feedbackData = await apiFetchJson('/style/agent-feedback', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(feedbackRequestBody),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const feedbackData = await response.json();
       const completedFeedbackItem = {
         ...loadingFeedbackItem,
         feedbackData: feedbackData,
@@ -1202,16 +1386,10 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
         content,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/style/comment`, {
+      await apiFetchJson('/style/comment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to submit analysis comment:', errorText);
-      }
     } catch (error) {
       console.error('Error submitting analysis comment:', error);
     }
@@ -1233,16 +1411,10 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
         content,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/style/comment`, {
+      await apiFetchJson('/style/comment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to submit result comment:', errorText);
-      }
     } catch (error) {
       console.error('Error submitting result comment:', error);
     }
@@ -1264,16 +1436,10 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
         content,
       };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/style/comment`, {
+      await apiFetchJson('/style/comment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to submit feedback comment:', errorText);
-      }
     } catch (error) {
       console.error('Error submitting feedback comment:', error);
     }
@@ -1291,7 +1457,7 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
     return (
       <div className={styles.errorContainer}>
         <p>No analysis data found. Please upload your artwork first.</p>
-        <button onClick={() => router.push(`/project/${projectId}`)} className={styles.backButton}>
+        <button onClick={() => router.push(`/project/?id=${encodeURIComponent(projectId)}`)} className={styles.backButton}>
           Back to Upload
         </button>
       </div>
@@ -1311,9 +1477,10 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
       <div className={styles.analysisHeader}>
         <div className={styles.logo} onClick={handleBack}>
           <span className={styles.logoIcon}>✦</span>
-          <span className={styles.logoText}>Style</span>
+          <span className={styles.logoText}>Style-AER</span>
         </div>
         <div className={styles.projectInfo}>
+          <SettingsButton />
           {/* {externalLinkUrl && (
             <a
               href={externalLinkUrl}
@@ -1391,5 +1558,13 @@ const handleReplaceImageOptimistic = async (targetType, imageData, replaceTypeOv
         />
       )}
     </div>
+  );
+}
+
+export default function AnalysisPage() {
+  return (
+    <Suspense fallback={<div>Loading analysis...</div>}>
+      <AnalysisPageContent />
+    </Suspense>
   );
 }

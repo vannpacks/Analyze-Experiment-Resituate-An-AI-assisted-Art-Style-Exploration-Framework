@@ -3,7 +3,6 @@
 import threading
 from utils.project import Project
 from autogen_core import AgentRuntime
-from autogen_ext.models.openai import OpenAIChatCompletionClient
 from dotenv import load_dotenv
 import os
 from typing import Dict
@@ -33,23 +32,24 @@ data_path = "data"  # Path to the data directory
 current_project: Project = None
 
 load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-
 model_general = "gpt-5-2025-08-07"
 # model_agent = "gpt-4.1-mini"
 model_agent = "o4-mini-2025-04-16"
 model_image_generation = "gpt-4o"
 
-model_client = OpenAIChatCompletionClient(
-    model=model_agent,
-    temperature=1,
-)
+model_client = None
+model_client_light = None
 
-model_client_light = OpenAIChatCompletionClient(
-    model="gpt-4.1-nano",
-    temperature=1,
-)
+
+def reset_clients() -> None:
+    global model_client, model_client_light
+    from providers import get_autogen_client
+    try:
+        model_client = get_autogen_client(model_agent)
+        model_client_light = get_autogen_client("gpt-4.1-nano")
+    except RuntimeError:
+        model_client = None
+        model_client_light = None
 
 
 runtime: AgentRuntime = None

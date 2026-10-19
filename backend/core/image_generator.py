@@ -16,6 +16,7 @@ import requests
 from PIL import Image as PILImage
 from shared import get_current_project_language
 from tools.helper.PromptGPT import generate_image_bfl_kontext, generate_image_bfl_kontext_2Ref
+from utils.model import ProviderAPIError
 
 class ImageGeneratorService:
     """Handles the generation of new images and style tweaking direction from a prompt."""
@@ -132,6 +133,8 @@ class ImageGeneratorService:
             print(f"Successfully generated image: {target_path}")
             return str(target_path)
             
+        except ProviderAPIError:
+            raise
         except Exception as e:
             print(f"Error generating image directly: {e}")
             return None
@@ -217,20 +220,41 @@ class ImageGeneratorService:
         try:
             #
             directions_json_str = self.generate_style_tweaking_direction(instruction, original_image, reference_image, iteration_id, reference_image_id)
+            if not directions_json_str:
+                yield {
+                    "status": "failed",
+                    "error": "Style direction generation returned no response."
+                }
+                return
             directions_data = json.loads(directions_json_str)
             style_directions = directions_data.get("style_tweaking_directions", [])
 
             if not style_directions:
-                print("No style tweaking directions found in the response.")
+                yield {
+                    "status": "failed",
+                    "error": "No style tweaking directions were returned."
+                }
                 return # Stop iteration
         except (json.JSONDecodeError, KeyError, TypeError) as e:
             print(f"Failed to parse style directions from LLM response: {e}")
+            yield {
+                "status": "failed",
+                "error": f"Failed to parse style directions: {e}"
+            }
             return # Stop iteration
+        except Exception as e:
+            print(f"Failed to generate style directions: {type(e).__name__}: {e}")
+            yield {
+                "status": "failed",
+                "error": f"Failed to generate style directions: {type(e).__name__}: {e}"
+            }
+            return
 
         # Step 2: Generate a final prompt for each direction in parallel
         print(f"Found {len(style_directions)} directions. Generating final prompts...")
         
         prompt_data = []
+        prompt_errors = []
         #
         with concurrent.futures.ThreadPoolExecutor() as prompt_executor:
             future_to_direction = {
@@ -253,9 +277,14 @@ class ImageGeneratorService:
                     })
                 except Exception as e:
                     print(f"Error generating a final prompt: {e}")
+                    prompt_errors.append(str(e))
 
         if not prompt_data:
             print("No final prompts were successfully generated.")
+            yield {
+                "status": "failed",
+                "error": prompt_errors[0] if prompt_errors else "No final image prompts were generated."
+            }
             return # Stop iteration
 
         # Step 3: Stream the results instead of returning a list

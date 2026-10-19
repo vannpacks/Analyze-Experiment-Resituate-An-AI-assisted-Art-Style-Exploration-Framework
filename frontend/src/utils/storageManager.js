@@ -114,7 +114,6 @@ export class StorageManager {
 
     console.log('[saveProjectImageSet] project=', projectId, 'setId=', imageSetId,
   'hasRefB64=', !!referenceWork?.base64, 'hasUserB64=', !!uploadedArtwork?.base64);
-    console.trace('[saveProjectImageSet trace]');
     
     const imageSetData = {
       setId: imageSetId,
