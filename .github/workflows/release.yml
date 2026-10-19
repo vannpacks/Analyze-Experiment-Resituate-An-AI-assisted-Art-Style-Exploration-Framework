@@ -1,3 +1,4 @@
+
 name: Release
 
 on:
@@ -29,22 +30,22 @@ jobs:
 
       - name: Package release
         run: |
-          mkdir -p dist/styleagent
+          mkdir -p dist/aer-framework
           rsync -a \
             --exclude '.git' --exclude '.github' --exclude '.venv' --exclude 'dist' \
             --exclude 'frontend/node_modules' --exclude 'frontend/.next' \
-            ./ dist/styleagent/
+            ./ dist/aer-framework/
           cd dist
-          zip -r styleagent.zip styleagent
+          zip -r aer-framework.zip aer-framework
 
       - uses: actions/upload-artifact@v4
         with:
-          name: styleagent
-          path: dist/styleagent.zip
+          name: aer-framework
+          path: dist/aer-framework.zip
 
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/styleagent.zip
+          files: dist/aer-framework.zip
           generate_release_notes: true
