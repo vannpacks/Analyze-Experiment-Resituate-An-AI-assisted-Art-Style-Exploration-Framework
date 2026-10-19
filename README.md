@@ -68,7 +68,9 @@ npm run dev
 
 ## License
 
-This project is open source under the MIT License. See [LICENSE](LICENSE) for details.
+Code: This project is open source under the MIT License. See [LICENSE](LICENSE) for details.
+
+Paper: The associated research paper is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0). Please refer to the paper’s publication page for the full license terms.
 
 ## Citation
 
