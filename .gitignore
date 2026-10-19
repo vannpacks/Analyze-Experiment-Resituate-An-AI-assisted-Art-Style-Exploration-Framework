@@ -66,5 +66,6 @@ memory_tmp_test/*
 *-lock.json
 *.lock
 !uv.lock
+!package-lock.json
 
 /frontend_baseline/
