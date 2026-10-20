@@ -91,7 +91,7 @@ The launcher starts FastAPI and the exported frontend on port `8765`, or the nex
 
 ## User one-click access
 
-Download `styleagent.zip` from the GitHub Releases page. It already includes the built frontend, so Node.js and npm are not needed. Downloading the repository source instead requires Node.js; `start.bat` and `start.command` build the frontend automatically on first launch.
+Download `aer-framework.zip` from the GitHub Releases page. It already includes the built frontend, so Node.js and npm are not needed. Downloading the repository source instead requires Node.js; `start.bat` and `start.command` build the frontend automatically on first launch.
 
 ### Windows
 
